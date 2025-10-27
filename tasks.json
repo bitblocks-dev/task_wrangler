@@ -1,0 +1,11 @@
+[
+  {
+    "id": "ad89f74c-059d-4bf3-af2a-251ca33b8b1d",
+    "name": "Sweep the dishes",
+    "description": "Sweep all of the dishes in the cupboard.",
+    "status": "Todo",
+    "subtasks": [
+      "9fd70769-1151-4f91-912f-f5accad28e13"
+    ]
+  }
+]
