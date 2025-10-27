@@ -32,44 +32,18 @@ pub enum Status {
 pub struct Tasks(Vec<Task>);
 impl Tasks {
     fn get_from_id(&self, id: &Uuid) -> Option<&Task> {
-        for task in self.0.iter() {
-            if &task.id == id {
-                return Some(task);
-            }
-        }
-        None
+        self.0.iter().find(|&task| &task.id == id).map(|v| v as _)
     }
 
-    fn get_from_id_mut(&mut self, id: &Uuid) -> Option<&mut Task> {
-        for task in self.0.iter_mut() {
-            if &task.id == id {
-                return Some(task);
-            }
-        }
-        None
-    }
-
-    fn get_index_from_id(&self, id: &Uuid) -> Option<usize> {
-        let task_from_id = self.get_from_id(id).unwrap();
-
-        for (idx, task) in self.0.iter().enumerate() {
-            if task.id == task_from_id.id {
-                return Some(idx);
-            }
-        }
-
-        None
-    }
-
-    fn remove_task_from_subtasks(&mut self, id: &Uuid, task: *const Task) {
+    fn remove_task_from_subtasks(&mut self, task: *const Task) {
         self.0
             .iter_mut()
             .for_each(|x| x.subtasks.retain(|t| !std::ptr::addr_eq(t, task)));
     }
 
-    fn remove_task(&mut self, task: *const Task, task_id: Uuid) {
+    fn remove_task(&mut self, task: *const Task) {
         self.0.retain(|t| !std::ptr::addr_eq(t, task));
-        self.remove_task_from_subtasks(&task_id, task);
+        self.remove_task_from_subtasks(task);
     }
 
     fn display(&self, id: &Uuid) {
@@ -233,7 +207,7 @@ fn confirm() -> bool {
     io::stdin()
         .read_line(&mut input) // Read input into the `input` variable
         .expect("Failed to read input");
-    let selection = input.trim().chars().nth(0).unwrap_or('n');
+    let selection = input.trim().chars().next().unwrap_or('n');
     if selection == 'y' {
         return true;
     }
@@ -242,11 +216,10 @@ fn confirm() -> bool {
 }
 
 fn remove_task(tasks: &mut Tasks) {
-    let selection = select(&tasks).unwrap();
+    let selection = select(tasks).unwrap();
     println!("Are you sure you wish to delete? ");
     if confirm() {
-        let selection_id = selection.id.clone();
-        tasks.remove_task(selection, selection_id);
+        tasks.remove_task(selection);
         println!("Task Deleted.");
     }
 }
@@ -277,7 +250,7 @@ fn add_task(tasks: &mut Tasks) {
 
 fn add_subtask(tasks: &mut Tasks) {
     println!("Add subtask to:");
-    let add_to = select(&tasks).unwrap().id;
+    let add_to = select(tasks).unwrap().id;
     println!("Task Name: ");
     let mut input = String::new();
     io::stdin()
